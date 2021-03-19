@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="jquery-3.5.1.js"></script>
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <title>Document</title>
+</head>
+
+<style>
+    
+    body{
+        background-color: rgb(2, 11, 15)
+    }
+    
+    .game_table{
+        background-color: rgb(18, 47, 66);
+        width: 570px;
+    }
+    
+    .cell{
+        width: 55px;
+        height: 55px;
+        background-color: rgb(92, 92, 92);
+        margin: 1px;
+        padding: 0;
+    }
+    
+    /* .ship_cell{
+        background-color: blueviolet;
+    } */
+    
+    .ocean{
+        background-color: rgb(25, 118, 180);
+    }
+    
+    .cross{
+        background-color: #310815;
+        border-radius: 5px;
+        position: relative;
+    }
+    
+    .cross:after {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        content: "\274c"; /* use the hex value here... */
+        font-size: 40px; 
+        color: #FFF;
+        text-align: center;
+    }
+    
+    
+</style>
+
+<body>
+    
+<div class="container" align='center'>
+    <div class="row mt-5">
+        <div class="col-6">
+            <div class="title_group">
+                <h1 class="game_title text-light">BattleShip</h1>
+                <h3 class="game_status text-light">Click to start</h3>
+            </div>
+            
+            <div class="game_table">
+            </div>
+            
+        </div>
+        
+        <!-- <div class="col-5">
+            <button class="game-reset btn btn-success btn-lg">Reset the game</button>
+            <div class="info mt-2"></div>
+            
+            <div class="result_container">
+                <table class="result_talbe table">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="text-light">Players</th>    
+                            <th scope="col" class="text-light">Scores</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="seagreen-row">
+                            <th scope="row" class="seagreen-heading">Seagreen</th>
+                            <td class="score text-muted" data-score="0"></td>
+                        </tr>
+                        <tr class="orange-row">
+                            <th scope="row" class="orange-heading">Orange</th>
+                            <td class="score text-muted" data-score="1"></td>
+                        </tr>
+                        
+                    </tbody>
+                    
+                </table>
+            </div>
+            
+        </div> -->
+        
+        
+        
+    </div>
+    
+</div>
+
+
+<script>
+    
+const TABLE_SIZE = 10 
+
+var directions = [
+    'horizontal',
+    'vertical',
+]
+var horizontal_combinations = []
+var vertical_combinations = []
+
+
+function get_random_direction(){
+    return directions[Math.floor(Math.random() * directions.length)]
+}
+
+function add_row_to_gametable(){
+    for (let i = 0; i < TABLE_SIZE; i++){
+        $('.game_table').append(`<div class="row mx-auto"></row>`)
+    }
+}
+
+function add_cell_to_row(){
+    $.each($('.game_table .row'), function(index, value) {
+        let row = $(value)
+        for (let i = 0; i < TABLE_SIZE; i++){
+            let cell = new Cell()
+            // console.log(cell)
+            $(row).append(cell.tag)
+        }
+    })   
+}
+
+function draw_cells(){
+    add_row_to_gametable()
+    add_cell_to_row()
+}
+
+function ship_factory(ship_classes) {
+    ship_classes.forEach(ship => {
+        for (let i = 0; i < ship.quantity; i ++){
+            ship_instances.push(new ship())
+        }
+    })
+}
+
+
+class Cell{
+    static count = 0
+    
+    constructor(){
+        this.cell_id = Cell.count
+        this.tag = `<div id="cell_${this.cell_id}" class="cell"></div>`
+        Cell.count++
+    }
+}
+
+class Ship{
+    static quantity
+    constructor(name, len){
+        this.name = name
+        this.len = len
+        this.direction = get_random_direction()
+    }
+    
+}
+
+
+class LargeShip extends Ship{
+    static quantity = 1
+    constructor(){
+        super('LargeShip', 4)
+    }
+}
+
+class BigShip extends Ship{
+    static quantity = 2
+    constructor(){
+        super('BigShip', 3)
+    }
+}
+
+class MediumShip extends Ship{
+    static quantity = 3
+    constructor(){
+        super('MediumShip', 2)
+    }
+}
+
+class SmallShip extends Ship{
+    static quantity = 4
+    constructor(){
+        super('SmallShip', 1)
+    }
+}
+
+var ship_classes = [
+    LargeShip,
+    BigShip,
+    MediumShip,
+    SmallShip,
+]
+
+var ship_instances = []
+
+
+
+draw_cells()
+ship_factory(ship_classes)
+
+
+let cell_array = new Array(...$('.game_table .row .cell'))
+let new_arr = []
+
+
+
+for (let i = 0; i < cell_array.length; i += 10){
+    new_arr.push(cell_array.slice(i, i + 10))
+}
+
+console.log('new array : ', new_arr)
+
+
+function rotate_array(arr) {
+    let new_arr = []
+    let arr_to_extend = []
+    for (let i = 0; i < arr.length; i ++){
+        for (let j = arr.length - 1; j >= 0; j --){
+            arr_to_extend.push(arr[j][i])
+        }
+        new_arr.push(arr_to_extend)
+        arr_to_extend = []
+    }
+    return new_arr
+}
+
+let rotated_array = rotate_array(new_arr)
+
+function get_combinations(array, instances, direction) {
+    let ships = [instances[0], instances[1], instances[3], instances[8]]
+    var dict = {}
+    var result = []
+    
+    ships.forEach(ship => {
+        array.forEach(row => {    
+            for (let i = 0; i < row.length - ship.len + 1; i ++){
+                let comb = $(row.slice(i, i + ship.len))
+                result.push(comb)
+                
+            }
+        });
+        dict[ship.name] = result
+        result = []
+    });
+    if (direction === 'horizontal'){
+        horizontal_combinations = dict
+    } else if (direction === 'vertical'){
+        vertical_combinations = dict
+    }
+}
+
+get_combinations(new_arr, ship_instances, 'horizontal')
+console.log('=-=--=-====-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
+get_combinations(rotated_array, ship_instances, 'vertical')
+
+
+function get_random_combination(ship) {
+    let comb
+    let ship_comb
+    
+    let horizon_comb_list_of_ship = horizontal_combinations[ship.name]
+    let vertical_comb_list_of_ship = vertical_combinations[ship.name]
+
+    horizon_comb_list_of_ship.forEach(combination => {
+        neighbours_index_list.forEach(index => {
+            
+        });
+    });
+
+    // ! infinite loop
+    console.log('///////////////////////////////////', vertical_comb_list_of_ship)
+    vertical_comb_list_of_ship.forEach(combination => {
+        neighbours_index_list.forEach(index => {
+            console.log('vertical')
+            console.log('combination: ', combination)
+            console.log('index: ', index)
+     });
+    });
+    
+    
+    if (ship.direction === 'horizontal') {
+        ship_comb = horizontal_combinations[ship.name]
+        
+    } else if(ship.direction === 'vertical') {
+        ship_comb = vertical_combinations[ship.name]
+    }
+    comb = ship_comb[Math.floor(Math.random() * ship_comb.length)]
+
+    return comb
+}
+
+
+
+function retrieve_string_digit(string){
+    let string_num = string.match(/\d+/g)[0]
+    
+    if (string_num.length === 1){
+        string_num = '0' + string_num
+    }
+    return string_num
+}
+
+function join_nums(index_digits){
+    return index_digits.map(digit => digit.toString()).join('')
+}
+
+// check point 2
+// ...?
+let neighbours_index_list = []
+function get_neighbours(generated_positions) {
+    
+    let neighbour_x, neighbour_y
+    for (let gen_pos of generated_positions) {
+        // console.log('id: ', gen_pos.id)
+        let index = retrieve_string_digit(gen_pos.id)
+        // console.log(index)
+        let [x, y] = index
+        x = parseInt(x)
+        y = parseInt(y)
+        // console.log('x: ', x)
+        // console.log('y: ', y)
+
+        for (let i = 0; i < 8; i ++) {
+            if (i == 0){
+                [neighbour_x, neighbour_y] = [x - 1, y]
+            }else if (i == 1){
+                [neighbour_x, neighbour_y] = [x - 1, y + 1] 
+            }else if (i == 2){
+                [neighbour_x, neighbour_y] = [x, y + 1]
+            }else if (i == 3){
+                [neighbour_x, neighbour_y] = [x + 1, y + 1]
+            }else if (i == 4){
+                [neighbour_x, neighbour_y] = [x + 1, y]
+            } else if (i == 5){
+                [neighbour_x, neighbour_y] = [x + 1, y - 1]
+            }else if (i == 6){
+                [neighbour_x, neighbour_y] = [x, y - 1]  
+            }else if (i == 7){
+                [neighbour_x, neighbour_y] = [x - 1, y - 1]
+            }
+            // if not cordinats out of range
+            if (!(neighbour_x < 0 || neighbour_x > 9 || neighbour_y < 0 || neighbour_y > 9)){
+                // handle logic
+                neighbours_index_list.push([neighbour_x, neighbour_y])
+                // console.log('n_x n_y', neighbour_x, neighbour_y)
+            }
+        }
+    }  
+   
+    console.log('exclude : ', neighbours_index_list)
+}
+
+// check point 1
+function get_generated_positions(){
+    ship_instances.forEach(ship => {
+        //  horizontal and vertical combinations exclude neighbours_index_list items ...
+        // break point
+
+        var generated_positions = get_random_combination(ship)
+        
+        let sh_pos = $(ship_positions).toArray()
+        console.log('sh_pos: ', sh_pos)
+        console.log('gen_pos', generated_positions)
+        get_neighbours(generated_positions)
+        ship_positions.push(generated_positions)
+        
+        
+    });
+}
+
+
+function make_cell_to_ship(){
+    $.each($(ship_positions), function(comb_index, comb_value){
+        for (let cell of comb_value){
+            $(cell).addClass('ship_cell')
+        }
+    })
+}
+
+
+function handle_ship_drowing() {
+    get_generated_positions()
+    make_cell_to_ship()
+}
+
+
+
+var ship_positions = []
+
+handle_ship_drowing()
+
+
+
+$(function() {
+    
+    
+    $('.cell').on('click', function() {
+        console.log(this.id)
+        if ($(this).hasClass('ship_cell')) {
+            $(this).addClass('cross')
+        } else {
+            $(this).addClass('ocean')
+        }
+    })
+    
+})
+        
+    
+</script>
+
+    
+</body>
+
+</html>
